@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eksplorasi Suku Nusantara</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #e67e22;
+            --bg-glass: rgba(255, 255, 255, 0.96); 
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            min-height: 100vh;
+            /* Menggunakan motif batik sebagai background */
+            background-image: url('Motif-Batik-Parang-Kusumo-Jogja.jpg');
+            background-repeat: repeat;
+            background-attachment: fixed;
+            background-color: #f4f1ea;
+        }
+
+        .container {
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px); 
+            width: 100%;
+            max-width: 850px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            padding: 40px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+
+        /* AREA DESKRIPSI DENGAN FUNGSI JUSTIFY */
+        .info-card {
+            background: #fffcf7;
+            border-left: 8px solid var(--accent);
+            padding: 30px;
+            margin-bottom: 40px;
+            /* Perbaikan Utama: Rata Kiri Kanan */
+            text-align: justify; 
+            font-size: 1.15em;
+            line-height: 1.9;
+            color: #333;
+            border-radius: 0 15px 15px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            min-height: 100px;
+            hyphens: auto; /* Membantu pemotongan kata di ujung baris agar lebih rapi */
+        }
+
+        .search-box { display: flex; gap: 15px; margin-bottom: 35px; }
+        input { flex: 1; padding: 18px; border: 2px solid #ddd; border-radius: 12px; font-size: 16px; outline: none; }
+        button { padding: 0 40px; background: var(--accent); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; }
+        .image-container { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .img-box { background: white; padding: 15px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid #eee; text-align: center; }
+        img { width: 100%; height: 250px; object-fit: cover; border-radius: 12px; margin-bottom: 15px; }
+        .label { font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; font-size: 0.9em; }
+        .loader { display: none; border: 6px solid #f3f3f3; border-top: 6px solid var(--accent); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 style="color: var(--primary); margin-bottom: 30px;">🔍 Eksplorasi Suku Dunia dan Nusantara</h1>
+    
+    <div class="search-box">
+        <input type="text" id="sukuInput" placeholder="Ketik nama suku (Inca, Baduy, Dani)...">
+        <button onclick="cariSuku()">CARI</button>
+    </div>
+
+    <div id="loader" class="loader"></div>
+
+    <div id="result" style="display:none;">
+        <div class="info-card" id="deskripsiTeks"></div>
+        
+        <div class="image-container">
+            <div class="img-box">
+                <img id="imgBaju" src="" alt="Baju Adat" onerror="this.src='https://via.placeholder.com/400x300?text=Gambar+Tidak+Ada'">
+                <span class="label">Pakaian Adat</span>
+            </div>
+            <div class="img-box">
+                <img id="imgRumah" src="" alt="Rumah Adat" onerror="this.src='https://via.placeholder.com/400x300?text=Gambar+Tidak+Ada'">
+                <span class="label">Rumah Tradisional</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // MASUKKAN URL NGROK ANDA DISINI
+    const SERVER_URL = "insert_your_serper_url";
+
+    async function cariSuku() {
+        const query = document.getElementById('sukuInput').value.trim();
+        if (!query) return alert("Masukkan nama suku!");
+
+        const loader = document.getElementById('loader');
+        const resultDiv = document.getElementById('result');
+        const deskripsiBox = document.getElementById('deskripsiTeks');
+
+        loader.style.display = 'block';
+        resultDiv.style.display = 'none';
+
+        try {
+            const response = await fetch(SERVER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: query })
+            });
+
+            const data = await response.json();
+            deskripsiBox.innerText = data.deskripsi;
+
+            document.getElementById('imgBaju').src = (data.foto_bajuAdat !== "not_found") ? data.foto_bajuAdat : "";
+            document.getElementById('imgRumah').src = (data.foto_rumahAdat !== "not_found") ? data.foto_rumahAdat : "";
+
+            resultDiv.style.display = 'block';
+        } catch (error) {
+            alert("Koneksi gagal. Cek kembali Server Ngrok Anda.");
+        } finally {
+            loader.style.display = 'none';
+        }
+    }
+
+    document.getElementById('sukuInput').addEventListener("keypress", (e) => {
+        if (e.key === "Enter") cariSuku();
+    });
+</script>
+</body>
+</html>
